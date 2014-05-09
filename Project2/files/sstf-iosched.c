@@ -1,5 +1,5 @@
 /*
- * shortest seek time first I/O scheduler
+ * Shortest Seek Time First I/O Scheduler
  */
 #include <linux/blkdev.h>
 #include <linux/elevator.h>
@@ -23,7 +23,7 @@ static void sstf_print_list(struct request_queue *q)
 	struct list_head* pos_print;
 	struct request* print_node;
 	
-	printk("Printing list: ");
+	printk("SSTF: Printing List: ");
 	list_for_each(pos_print, &nd->queue) {
 		print_node = list_entry(pos_print, struct request, queuelist);
 		printk("%lu,", (unsigned long)blk_rq_pos(print_node));
@@ -71,15 +71,16 @@ static void sstf_compare_seek(struct sstf_data *nd)
 		seek_next = 0;
 	}
 
-	printk("seek_prev = %lu, seek_next = %lu\n", seek_prev, seek_next);
+	printk("SSTF: Seek Distance: Prev = %lu, Next = %lu\n", 
+				seek_prev, seek_next);
 
 	//Dispatch the task (prev or next) with shortest seek time
 	if(seek_prev < seek_next) {
-		printk("dispatching previous task\n");
+		printk("SSTF: Dispatching Request 'Prev', Location: %lu\n", prev_sect);
 		nd->next_dispatch = nd->next_dispatch->prev;
 	}
 	else {
-		printk("dispatching next tast\n");
+		printk("SSTF: Dispatching Request 'Next', Location: %lu\n", next_sect);
 		nd->next_dispatch = nd->next_dispatch->next;
 	}
 }
@@ -92,7 +93,7 @@ static int sstf_merged_requests(struct request_queue *req_q, struct request *rq,
 
 static int sstf_dispatch(struct request_queue *q, int force)
 {
-	printk("Dispatch\n");
+	printk("SSTF: Beginning Next Dispatch\n");
 	struct sstf_data *nd = q->elevator->elevator_data;
 
 	if(!list_empty(&nd->queue)) {
@@ -100,18 +101,19 @@ static int sstf_dispatch(struct request_queue *q, int force)
 		rq = list_entry(nd->next_dispatch, struct request, queuelist);
 	
 		if(rq == 0) {
-			printk("failed to dispatch");
+			printk("SSTF: Failed to Dispatch\n");
 			return 0;
 		}
 
+		//If list contains only one item
 		if (nd->queue_count == 1) {
-			printk("list contains only one item\n");
 			list_del_init(&rq->queuelist);
 			nd->queue_count--;
 		}
 
+		//If list contains more than one item
 		else {
-			printk("dispatching multiple items\n");
+			//compare seek times for nearest items
 			sstf_compare_seek(nd);
 			
 			//delete last request 
@@ -119,10 +121,10 @@ static int sstf_dispatch(struct request_queue *q, int force)
 			nd->queue_count--;
 		}
 		
-		printk("Dispatching: %lu\n", (unsigned long)blk_rq_pos(rq));
+		printk("SSTF: Dispatching Request from Location: %lu\n", (unsigned long)blk_rq_pos(rq));
 		elv_dispatch_sort(q, rq);
 
-		printk("Queue count: %d", nd->queue_count);
+		printk("SSTF: Queue Count: %d\n", nd->queue_count);
 
 		return 1;
 	}		
@@ -135,7 +137,7 @@ static void sstf_add_request(struct request_queue *q, struct request *rq)
 	struct sstf_data *nd = q->elevator->elevator_data;
 	int added = 0;
 	
-	printk("Adding %lu\n", (unsigned long)blk_rq_pos(rq));
+	printk("SSTF: Adding New Item, Location: %lu\n", (unsigned long)blk_rq_pos(rq) );
 
 	sstf_print_list(q);
 
@@ -164,7 +166,6 @@ static void sstf_add_request(struct request_queue *q, struct request *rq)
 			nd->queue_count++;
 			added = 1;
 			
-			printk("Added second item\n");
 			break;
 		}
 
@@ -174,7 +175,6 @@ static void sstf_add_request(struct request_queue *q, struct request *rq)
 			nd->queue_count++;
 			added = 1;
 			
-			printk("Adding item number 3 or higher\n");
 			break;
 		}
 	}
@@ -183,18 +183,16 @@ static void sstf_add_request(struct request_queue *q, struct request *rq)
 	if(added != 1) {
 		list_add_tail(&rq->queuelist, &nd->queue);
 		nd->queue_count++;
-		
-		printk("added new item to tail\n");
 	}
 
-	printk("queue count: %d\n", nd->queue_count);
+	printk("SSTF: Queue Count: %d\n", nd->queue_count);
 	sstf_print_list(q);
 }
 
 static void *sstf_init_queue(struct request_queue *q)
 {
 	struct sstf_data *nd;
-	printk("Initializing queue");
+	printk("SSTF: Initializing Queue\n");
 
 	nd = kmalloc_node(sizeof(*nd), GFP_KERNEL, q->node);
 	if(!nd) return NULL;
@@ -207,6 +205,7 @@ static void *sstf_init_queue(struct request_queue *q)
 static void sstf_exit_queue(struct elevator_queue *e)
 {
 	struct sstf_data *nd = e->elevator_data;
+	printk("SSTF: Exiting Queue\n");	
 
 	BUG_ON(!list_empty(&nd->queue));
 	kfree(nd);
