@@ -1,0 +1,27 @@
+\documentclass[a4paper]{article}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+
+\title{Group Report 2}
+
+\author{Group 17: Jesse Wilson, Daniel Tasato, Zuan Xhang}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+
+\section{Design Summary}
+The design for implementing a Shortest Seek Time First I/O Scheduler is based closely on the implementation of the Noop I/O Scheduler implementation in the block folder of the linux kernel. This implementation constructs an elevator type struct at the bottom of the file, which hands the kernel access to the functions written above it. Those functions consist of a dispatch function, which is responsible for chosing the next I/O request to run, an add request function, an initialization function for the queue, and an exit function for the queue. The last two functions, init and exit are essentially identical to the implementations in noop. In the dispatch function, a selector function was added to determine whether the next or previous request in the queue would be run next, based upon their seek time from the most recently run request. This function had the same outline of the function in noop, but the selection functionality was added for shortest seek time first implementation. The add request function needs to be able to ensure that the list is in order from the beginning to the end of the disk, to ensure given any request in the list, the next and the previous requests in the list are the shortest possible distance from the currently running request. 
+
+
+\section{Testing Methodology}
+In order to show the functionality of this code, the printk messages from the code will be displayed in order to show the order of in which I/O requests are being handled. This, along with the specific location of the requests, will show that the code is truly using a shortest seek time first algorithm to determine which function to run next. Beyond this, a test program will hand the program some disk read and write actions to perform and the messages printed to the terminal show the order in which the requests are being handled. 
+
+
+\end{document}

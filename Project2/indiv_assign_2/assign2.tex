@@ -1,0 +1,47 @@
+\documentclass[a4paper]{article}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+
+\title{Individual Assignment 1}
+
+\author{Jesse Wilson}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+
+\section{Question 1}
+
+What do you think the main point of this assignment is?
+
+
+The main point of this assignment was to delve deeper into the functionality of the kernel. Where the previous assignment asked us to manipulate and build the kernel as a teaching tool, this assignment focused a little more on the writing of kernel code. Through this, I learned a great deal about how the kernel manages and accesses functions. I also learned a great deal about how the kernel manages input/output operations. 
+
+\section{Question 2}
+
+How did you personally approach the problem? Design decisions, algorithm, etc.
+
+
+As with the last assignment, the first step in this assignment was to start by wrapping my mind around the problem at hand. I read through the noop file carefully and seached the internet for an understanding of shortest seek time first algorithms. At this point I knew that the basic structure of the code would be the same as the noop file and I would only need to add functionality to control exactly what request was handled after each function was run. This could be added to the dispatch function. By altering the add request function so that it would maintain the requests in order by the seek time from the beginning of the disk, i simplified the logic of the dispatch fuction to only needing to check the previous and next in the list to determine which would run next. 
+
+\section{Question 3}
+
+How did you ensure your solution was correct? Testing details, for instance.
+
+
+Testing was a matter of printk function calls and reading what the scheduler was doing as a piece of test code gave it requests to handle. This shows the order that the requests are running, proving functionality of the code.
+
+\section{Question 4}
+
+What did you learn?
+
+
+I mostly learned how to add a file to the linux kernel and how I/O scheduling works. I learned how to modify the local makefile and the Kconfig.iosched file. Both of these files were modified to give the kernel access to the new file we constructed. I kept thinking I had modified everything that I needed to in order to make the new file work, but I kept missing things and having to go back and figure out why it didn't work. Eventually I was successful and the new file compiled with the kernel. 
+
+\end{document}

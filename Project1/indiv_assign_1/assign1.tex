@@ -1,0 +1,45 @@
+\documentclass[a4paper]{article}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+
+\title{Individual Assignment 1}
+
+\author{Jesse Wilson}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+
+\section{Question 1}
+
+What do you think the main point of this assignment is?
+
+
+The primary purpose of this assignment is to become exposed to the kernel, its directory tree, manipulating it, and installing it. This assignment surprised in the simplicity of the necessary written code, but it was challenging as I had never worked with an operating system kernel before. Had I been exposed to the idea of modifying and installing an updated version of a kernel before this, it would have been a very easy assignment. However, because I hadn't been exposed to such things, I found myself frequently running into roadblocks in comprehension of the multiple levels of abstraction. Once I was able to step beyond this, it became easier.
+
+\section{Question 2}
+
+How did you personally approach the problem? Design decisions, algorithm, etc.
+
+
+My first step to this assignment was to focus on wrapping my mind around what was being asked. This involved a lot of pouring over the textbook and asking fellow classmates and my group members specific questions to help solidify in my mind what I was supposed to be doing. After this, I installed VMware, set up CentOS and followed the instructions on the website for downloading the modified version of the kernel. I was able to determine the correct files to modify and I compared them with the original kernel of the same version, which I downloaded using the book's instructions. My group and I ran into a number of issues in the process of installing the newly modified kernel though. We were able to determine that the errors we kept receiving were do to not having a properly modified grub file in our new kernel. After this change, the assignment flowed much more smoothly. 
+
+\section{Question 3}
+
+How did you ensure your solution was correct? Testing details, for instance.
+
+In order to test the correctness of our solution, we simply wrote a user space program that would fork new processes and they would print information about themselves to the terminal. Having these new processes run with the new kernel installed would show how the scheduler was organizing their execution. It was also easy to see which scheduler was managing the processses as the round robin scheduler would bounce back and forth between the processes until they were each complete, where the fifo scheduler would run the first one until completion, then the second one until completion and so on.
+
+\section{Question 4}
+
+What did you learn?
+
+Above all, this project taught me not to be intimidated as much by the concept of kernel programming. I understand now how the Linux kernel is layed out and how to find specific files that serve specific functions. I can manipulate those functions and reinstall the kernel. I understand that the primary (though not the only) method of testing the kernel is within user space after installation is complete. All of these basic tools of understanding will come in handy in the upcomming projects.
+
+\end{document}
