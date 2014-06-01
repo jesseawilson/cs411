@@ -1,0 +1,37 @@
+\documentclass[a4paper]{article}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+
+\title{Individual Assignment 3}
+
+\author{Jesse Wilson}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{What do you think the main point of this assignment is?}
+
+The main point of this assignment is to familiarize us with the concept of drivers in the linux kernel. One of the most important parts of an operating system is its interation with the hardware below it. This assignment was an introduction to the fundamental component in the kernel which interacts with the hardware: drivers. The idea of a RAM disk driver was most likely picked simply because the kernel doesn't have or really need such a driver.
+
+
+\section{How did you personally approach the problem? Design decisions, algorithm, etc.}
+
+As with the last assignment, the first step in this assignment was to start by wrapping my mind around the problem at hand. I read through the cryptoloop file and seached the internet for anything that would aid my understanding of how a ram disk works. At this point I knew that the basic structure of the code would be similar to the cryptoloop file and I would need to add functionality specific to our implementation of the RAM disk. The other part of the project was to actually implement the file in the kernel. This proved to be similar, but a bit more complicated than the lasst project.
+
+
+\section{How did you ensure your solution was correct? Testing details, for instance.}
+
+Testing was a matter of printk function calls and reading what the scheduler was doing as a piece of test code, called the necessary functions to build the ram disk and then gave it requests to handle. This shows that requests are being handled and reading and writing to and from the RAM disk.
+
+\section{What did you learn?}
+
+I learned what goes into writing a basic driver. I learned more about how to modify the local makefile and the Kconfig.iosched file. Both of these files were modified to give the kernel access to the new file we constructed. Ultimately, this assignment overlapped the previous assignment quite a bit. It was just a different kind of file, a lower level file that was being implemented. 
+
+
+\end{document}
