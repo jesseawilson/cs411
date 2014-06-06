@@ -72,6 +72,12 @@
 
 #include <asm/atomic.h>
 
+#include <linux/linkage.h>
+
+/* Hold a count of all the pages */
+unsigned long slob_page_count = 0;
+
+
 /*
  * slob_block has a field 'units', which indicates size of block if +ve,
  * or offset of next block if -ve (in SLOB_UNITs).
@@ -325,6 +331,12 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
 	struct list_head *slob_list;
 	slob_t *b = NULL;
 	unsigned long flags;
+	struct slob_page *sp_t;
+
+	/* temp variable for smallest slob page */
+	struct slob_page *tmp = NULL;
+	ssize_t min_block_size = 0;
+	ssize_t cur_block_size = 0;
 
 	if (size < SLOB_BREAK1)
 		slob_list = &free_slob_small;
@@ -335,7 +347,9 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
 
 	spin_lock_irqsave(&slob_lock, flags);
 	/* Iterate through each partially free page, try to find room */
-	list_for_each_entry(sp, slob_list, list) {
+	/* CHANGED!!!  sp chaged to sp_t */
+	list_for_each_entry(sp_t, slob_list, list) {
+	/* END CHANGED */
 #ifdef CONFIG_NUMA
 		/*
 		 * If there's a node specification, search for a partial
@@ -345,22 +359,44 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
 			continue;
 #endif
 		/* Enough room on this page? */
-		if (sp->units < SLOB_UNITS(size))
+		/* CHANGED!!! sp changed to sp_t */ 
+		if (sp_t->units < SLOB_UNITS(size))
+		/* END CHANGED */
 			continue;
-
+		
+		
+		/* REMOVED!!! */
 		/* Attempt to alloc */
-		prev = sp->list.prev;
+		//prev = sp->list.prev;
+		/* END REMOVED */
+
+		/* ADDED!!! */
+		if (sp == NULL)
+			sp = sp_t;
+
+		if (sp_t->units < sp->units)
+			/* Get the smallest slob_page that
+ *  			 * is large enough for our needs */
+			sp = sp_t;
+	}
+
+	/* Attempt to alloc */
+	if(sp != NULL) {
+	/* END ADDED */
 		b = slob_page_alloc(sp, size, align);
-		if (!b)
-			continue;
+		
+		/* REMOVE!!! */
+		//if (!b)
+			//continue;
 
 		/* Improve fragment distribution and reduce our average
 		 * search time by starting our next search here. (see
 		 * Knuth vol 1, sec 2.5, pg 449) */
-		if (prev != slob_list->prev &&
-				slob_list->next != prev->next)
-			list_move_tail(slob_list, prev->next);
-		break;
+		//if (prev != slob_list->prev &&
+				//slob_list->next != prev->next)
+			//list_move_tail(slob_list, prev->next);
+		//break;
+		/* END REMOVE */
 	}
 	spin_unlock_irqrestore(&slob_lock, flags);
 
@@ -371,6 +407,12 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
 			return NULL;
 		sp = slob_page(b);
 		set_slob_page(sp);
+
+		/* ADDED!!! */
+		/* We allocatted a new page, increment the count */
+		slob_page_count++;
+		/* END ADD */
+
 
 		spin_lock_irqsave(&slob_lock, flags);
 		sp->units = SLOB_UNITS(PAGE_SIZE);
@@ -415,6 +457,11 @@ static void slob_free(void *block, int size)
 		clear_slob_page(sp);
 		free_slob_page(sp);
 		slob_free_pages(b, 0);
+
+		/* ADDED!!! */
+		/* Freed a new page, dec the count */
+		slob_page_count--;
+		/* END ADD */
 		return;
 	}
 
@@ -681,6 +728,7 @@ int slab_is_available(void)
 
 void __init kmem_cache_init(void)
 {
+	/* ADDED!!! */ printk("SLOB: Ready!");
 	slob_ready = 1;
 }
 

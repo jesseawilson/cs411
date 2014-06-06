@@ -1,0 +1,39 @@
+\documentclass[a4paper]{article}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+
+\title{Individual Assignment 4}
+
+\author{Jesse Wilson}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{What do you think the main point of this assignment is?}
+
+The main point of this assignment is to familiarize us with the concept of memory block management in the linux kernel. One of the most important parts of an operating system is its interation with its memory and memory is managed in blocks. Placing new data into the memory is not as simple as just writing it to the first place you can find, though that is one way to do it. There are many approaches to determining where to write the next chunk of data and each of them has their pros and cons.
+
+
+\section{How did you personally approach the problem? Design decisions, algorithm, etc.}
+
+As with the all the assignments, the first step in this assignment was to start by wrapping my mind around the problem at hand. I read through the slob.c file and seached the internet for anything that would aid my understanding of how memory block management works. At this point I knew that the basic structure of the code would be very similar to the original slob file, though that file contained a first-fit algorithm and we need to write best-fit. In order to do this, it was necessary to change the slob_alloc function by adding in a check of the size of the available blocks to decide where to place the next item.
+
+
+\section{How did you ensure your solution was correct? Testing details, for instance.}
+
+Testing was a matter of printk function calls used to read what the SLOB was doing. A piece of test code called the necessary functions at system startup to use the SLOB as the primary memory block management tool. Then we built both the original first-fit algorithm and the new best-fit algorithm into separate linux kernel installs and ran them and tested them separately. This allows us to show the differences in performance between the two algorithms.
+
+
+\section{What did you learn?}
+
+I learned mostly about the how memory management works. It is crazy that by using a different memory management algorithm, you could use a substantially greater or less amount of memory and also signficantly affect system speeds. I learned how allocating memory on a kernel level differs from allocating memory on a user level. 
+
+
+\end{document}
+
