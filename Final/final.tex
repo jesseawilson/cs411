@@ -1,0 +1,48 @@
+\documentclass[a4paper]{article}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+
+\title{Final Exam}
+
+\author{Jesse Wilson}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Android is a wonderful and tangible example of the Linux kernel being implemented in a popular application. It is the first thing that comes to mind when someone asks what Linux is good for. After having spent the last ten weeks studying the kernel and implementing our own versions of some of its fundamental functions, the kernel source within the Android source tree looks a mighty bit familiar. In this course, we implemented our own process scheduler, I/O scheduler and a device driver. Android has its own variations of all of these. I will be comparing the Android process scheduler as well as the I/O scheduler to my own implementations.
+\end{abstract}
+
+\section{Process Scheduling}
+A scheduler is the way in which the kernel manages CPU resources across multiple processes. A policy is the way in which the scheduler manages these processes. It controls everyting from when the processes are run to how much time they get before being made to wait to how long before they get to to back on the CPU again. There are a number of different policies for process schedulers, multiples of which are implemented in the Linux kernel. 
+
+In Linux v2.6, the one we were using during this course, the default scheduler used for managing processes was the Completely Fair Scheduler (CFS). The idea of this scheduler is to try and evenly allocate processor resources to incoming tasks as though the computer had an ideal process which could multitask perfectly up to an infinite amount of processes. CFS would assign each process a portion of the CPU. If two process are running, each will get 50 percent of the CPU power. CFS implements a round-robin style scheduler with small timeslices such that the CPU is switching between multiple processes fast to give the illusion that everything is running in parallel.
+
+There are other schedulers in the Linux kernel as well. There are real-time schedulers with deadlines for the processes. In this scheduler, the operating system tries to finish processes before moving on to the next process, allowing a single process to monopolize the CPU for a period of time. If that process takes too much time, however, it will force it to stop and give the next process full access to the CPU and come back to the stopped process later. This can be implemented in a FIFO (first-in, first-out) or round-robin method, both of which use queues to manage the incoming processes. The FIFO scheduler simply takes in the first process in the queue and hands it to the CPU until its done, then it takes the next process and repeats. Round-robin attempts to prevent any resource starvation by allowing a maximum amount of time on the CPU, then stopping the process and allowing the next process to have the CPU for the same amount of time or until it finishes. The stopped process goes at the end of the queue and will receive CPU resources again once it reaches the front of the queue.
+
+Android applications all run in single processes. Naturally, Android devices are more limited on memory so only a certain amount of memory is available to be allocated for all running processes, so the kernel has the ability to put processes to sleep when memory is low and other processes need it. It does this by using an algorithm that esimates importance of the process to the user. The process that is in the foreground on screen has highest priority over all other processes. When memory is starting to run low, the process that has been out of view on screen for the longest, or the oldest processes, is put to sleep.
+
+Android also has separate process groups for processes in the foreground and process in the background. Whenever a process is moved to the background by the user, all of its threads are forced to the background process group. Background processes are limited to a small amount of CPU usage time as compared to foreground processes. This is all for the purpose of providing a sense of responsiveness to the user. The application they are currently viewing needs to respond when input is provided. By allocating a vast majority of hardware resources to the foreground application at the expense of background applications, the operating system can ensure that the user has a quick and responsive experience. 
+
+
+\section{Block I/O Scheduling}
+Block devices are devices that contain fixed-size blocks of data that the operating system needs access to. From the perspective of the kernel, the smallest addressable unit is the sector. When we write a scheduler for block I/O, we access the device in units of sectors which are mapped to blocks of memory. Within the Linux kernel, there is an entire subsection devoted to block device access and scheduling. 
+
+Block devices, such as the hard drive in the computer, have maintained request queues which store I/O task requests. The I/O scheduler has the job of managing this request queue. This scheduler decides which order the requests in the queue will be taken, and when to dispatch any given request. 
+
+Seek time is the time it will take to access the given block after such a request is granted. In the case of the hard drive, this would literally translate to the time it takes for the head of the drive to move from its current location to the location on the drive in which the request is located. In this course, we implemented a shortest-seek-time-first (SSTF) scheduler, which attempts to schedule the next request based on its distance from the last request on the disk. In doing this, it ensures that the head always moves the shortest distance possible, reducing latency on the block device to a minimum. However, it has the drawback of potentially starving out requests at the edges of the disk as with new request coming in constantly between the current location and the edge of the disk, the scheduler will prioritize them because they are closer and the further away request may never happen. 
+
+There are other kinds of schedulers in the kernel as well. There is the deadline I/O scheduler, which attempts to avoid starvation of requests, which is the primary issues of the SSTF scheduler. There is also the anticipatory scheduler, which is meant to maximize throughput, making it ideal for servers due to how quickly it can handle lots and lots of requests. The default scheduler in Linux v2.6 is the completely fair queueing (CFQ) scheduler. This is an all around good scheduler which performs well in most applications. There is also a scheduler called the Noop scheduler. It works by only performing merging of requests, and maintaining the request queue kind of like a FIFO, though this is bad for dealing with latency, it actually works very well when you have block devices with very low seek latency, such as a flash or solid state device.
+
+Android has the dealdline, noop, anticipatory and CFQ schedulers, just like stock Linux does,but in includes a few more for its own purposes. It has a scheduler called the budget fair queueing (BFQ) scheduler, which makes use of a system called budgets instead of timeslices to manage the request queue. In this scheduler, the disk is granted to a process until its budget, or number of sectors, expires. This works well for USB transfer and video recording and streaming due to its ability to reduce jitter and increase throughput over CFQ. It is slower on higher budget requests as it can increase latency by focusing on that request. Android also has the simple I/O scheduler, which is sort of a combination of the Noop and the deadline schedulers. It tries to reduce latency as well as overhead by not attempting to reorder the incomming requests, minimizing startvation.
+
+In Linux v2.6 the CFQ is the default scheduler. In Android, however, the default changes depending on which version you are using. In standard Linux, using a mechanical spinning disk hard drive, CFQ is the most efficient. However, most Android devices use some form of flash storage and thus commonly have noop as their default I/O scheduler. 
+
+\end{document}
+
